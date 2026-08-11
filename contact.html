@@ -110,8 +110,13 @@
     <form id="contactForm">
       <div class="row">
         <div class="field">
-          <label for="companyName">公司名稱</label>
-          <input id="companyName" name="companyName" type="text" />
+          <label for="companyName">報名課程</label>
+          <select id="companyName" name="companyName" required />
+              <option value="" disabled selected>請選擇課程</option>
+              <option value="Summer Course">Summer Course</option>
+              <option value="Activities">Activities</option>
+              <option value="Others">Others</option>
+          </select>
         </div>
 
         <div class="field">
