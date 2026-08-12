@@ -153,7 +153,7 @@
         <div class="system-msg">請選擇課程</div>
       </div>
       <div class="bubble">
-        <select id="companyName" name="companyName" required>
+        <select id="courseName" name="courseName" required>
           <option value="" disabled selected>請選擇課程</option>
           <option value="Summer Course">暑期課程</option>
           <option value="Activities">活動</option>
@@ -208,7 +208,7 @@
     const form = document.getElementById("contactForm");
     const status = document.getElementById("status");
     const feeInfo = document.getElementById("feeInfo");
-    const courseSelect = document.getElementById("companyName");
+    const courseSelect = document.getElementById("courseName");
 
     // ✅ 課程費用表（可隨時改）
     const courseFees = {
@@ -236,7 +236,7 @@
       status.textContent = "送出中...";
 
       const payload = {
-        companyName: form.companyName.value,
+        courseName: form.courseName.value,
         contactPerson: form.contactPerson.value.trim(),
         phone: form.phone.value.trim(),
         email: form.email.value.trim(),
