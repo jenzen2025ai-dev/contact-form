@@ -10,7 +10,7 @@
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", sans-serif;
-      background: #e5ddd5; /* WhatsApp 背景色 */
+      background: #e5ddd5;
     }
 
     .chat-container {
@@ -18,10 +18,8 @@
       margin: 0 auto;
       padding: 16px;
       padding-bottom: 130px;
-      box-sizing: border-box;
     }
 
-    /* 系統提示 */
     .system-wrapper {
       text-align: center;
       margin: 12px 0;
@@ -36,7 +34,6 @@
       border-radius: 12px;
     }
 
-    /* WhatsApp 氣泡（右側） */
     .bubble {
       background: #dcf8c6;
       padding: 14px 16px;
@@ -67,9 +64,7 @@
       margin-bottom: 6px;
     }
 
-    input,
-    select,
-    textarea {
+    input, select, textarea {
       width: 100%;
       border: none;
       font-size: 16px;
@@ -82,7 +77,6 @@
       min-height: 80px;
     }
 
-    /* 費用提示 */
     #feeInfo {
       display: none;
       background: #fff3cd;
@@ -94,7 +88,6 @@
       white-space: pre-line;
     }
 
-    /* 底部送出欄 */
     .bottom-bar {
       position: fixed;
       bottom: 0;
@@ -110,7 +103,7 @@
       max-width: 480px;
       margin: 0 auto;
       display: block;
-      background: #25d366; /* WhatsApp 綠 */
+      background: #25d366;
       color: #fff;
       font-size: 18px;
       font-weight: bold;
@@ -120,148 +113,178 @@
       cursor: pointer;
     }
 
-    .send-btn:active {
-      background: #1fa855;
-    }
-
     #status {
       text-align: center;
       font-size: 14px;
       color: #333;
       margin-top: 10px;
     }
-
-    /* 電腦版微調 */
-    @media (min-width: 768px) {
-      .chat-container {
-        padding-bottom: 140px;
-      }
-    }
   </style>
 </head>
 
 <body>
 
-  <div class="chat-container">
+<div class="chat-container">
+  <div class="system-wrapper">
+    <div class="system-msg">課程報名表單</div>
+  </div>
+
+  <form id="contactForm">
     <div class="system-wrapper">
-      <div class="system-msg">課程報名表單</div>
+      <div class="system-msg">請選擇課程</div>
+    </div>
+    <div class="bubble">
+      <select id="courseName" name="courseName" required>
+        <option value="" disabled selected>請選擇課程</option>
+        <option value="暑期課程">暑期課程</option>
+        <option value="活動">活動</option>
+        <option value="其他">其他</option>
+      </select>
     </div>
 
-    <form id="contactForm">
-      <!-- 課程名稱 -->
-      <div class="system-wrapper">
-        <div class="system-msg">請選擇課程</div>
-      </div>
-      <div class="bubble">
-        <select id="courseName" name="courseName" required>
-          <option value="" disabled selected>請選擇課程</option>
-          <option value="Summer Course">暑期課程</option>
-          <option value="Activities">網上活動</option>
-          <option value="Others">其他</option>
-        </select>
-      </div>
+    <div id="feeInfo"></div>
 
-      <!-- 即時顯示費用 -->
-      <div id="feeInfo"></div>
+    <div class="system-wrapper">
+      <div class="system-msg">請輸入聯絡人姓名</div>
+    </div>
+    <div class="bubble">
+      <input id="contactPerson" name="contactPerson" type="text" required placeholder="例如：陳大文" />
+    </div>
 
-      <!-- 聯絡人 -->
-      <div class="system-wrapper">
-        <div class="system-msg">請輸入聯絡人姓名</div>
-      </div>
-      <div class="bubble">
-        <input id="contactPerson" name="contactPerson" type="text" required placeholder="例如：陳大文" />
-      </div>
+    <div class="system-wrapper">
+      <div class="system-msg">請輸入聯絡電話</div>
+    </div>
+    <div class="bubble">
+      <input id="phone" name="phone" type="tel" placeholder="例如：6xxxxxxx" />
+    </div>
 
-      <!-- 聯絡電話 -->
-      <div class="system-wrapper">
-        <div class="system-msg">請輸入聯絡電話</div>
-      </div>
-      <div class="bubble">
-        <input id="phone" name="phone" type="tel" placeholder="例如：6xxxxxxx" />
-      </div>
+    <div class="system-wrapper">
+      <div class="system-msg">聯絡電郵（選填）</div>
+    </div>
+    <div class="bubble">
+      <input id="email" name="email" type="email" placeholder="example@email.com" />
+    </div>
 
-      <!-- Email（選填） -->
-      <div class="system-wrapper">
-        <div class="system-msg">聯絡電郵（選填）</div>
-      </div>
-      <div class="bubble">
-        <input id="email" name="email" type="email" placeholder="example@email.com" />
-      </div>
+    <div class="system-wrapper">
+      <div class="system-msg">請輸入諮詢內容</div>
+    </div>
+    <div class="bubble">
+      <textarea id="message" name="message" required placeholder="想了解課程內容、費用、時間等"></textarea>
+    </div>
+  </form>
+</div>
 
-      <!-- 諮詢內容 -->
-      <div class="system-wrapper">
-        <div class="system-msg">請輸入諮詢內容</div>
-      </div>
-      <div class="bubble">
-        <textarea id="message" name="message" required placeholder="想了解課程內容、費用、時間等"></textarea>
-      </div>
-    </form>
-  </div>
+<div class="bottom-bar">
+  <button type="submit" form="contactForm" class="send-btn">送出</button>
+  <div id="status"></div>
+</div>
 
-  <!-- 底部送出按鈕 -->
-  <div class="bottom-bar">
-    <button type="submit" form="contactForm" class="send-btn">送出</button>
-    <div id="status"></div>
-  </div>
+<script>
+  const form = document.getElementById("contactForm");
+  const status = document.getElementById("status");
+  const feeInfo = document.getElementById("feeInfo");
+  const courseSelect = document.getElementById("courseName");
 
-  <script>
-    const form = document.getElementById("contactForm");
-    const status = document.getElementById("status");
-    const feeInfo = document.getElementById("feeInfo");
-    const courseSelect = document.getElementById("courseName");
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbylhySw6oc5wkiZPoisLjabV2wKf2YbVNg5BC1wIH9N1dGIscVFgedWECR7jyTAk6Y_/exec";
 
-    // ✅ 課程費用表（可隨時改）
-    const courseFees = {
-      "Summer Course": "暑期課程費用：MOP 2,800\n（共8堂，每堂1.5小時）\n🎉 早鳥優惠：6月30日前報名減MOP 200",
-      "Activities": "活動班費用：MOP 1,500（單次體驗）",
-      "Others": "請在諮詢內容欄注明想了解嘅課程，我哋會盡快回覆。"
+  const WA_NUMBER = "85363562095";
+  const WECHAT_ID = "kaman9394";
+
+  const courseFees = {
+    "暑期課程": "暑期課程費用：MOP 2,800\n（共8堂，每堂1.5小時）\n🎉 早鳥優惠：6月30日前報名減MOP 200",
+    "活動": "活動班費用：MOP 1,500（單次體驗）",
+    "其他": "請在諮詢內容欄注明想了解嘅課程，我哋會盡快回覆。"
+  };
+
+  courseSelect.addEventListener("change", () => {
+    const selected = courseSelect.value;
+    if (courseFees[selected]) {
+      feeInfo.textContent = "💰 " + courseFees[selected];
+      feeInfo.style.display = "block";
+    } else {
+      feeInfo.style.display = "none";
+    }
+  });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    status.textContent = "送出中...";
+
+    const payload = {
+      courseName: form.courseName.value,
+      contactPerson: form.contactPerson.value.trim(),
+      phone: form.phone.value.trim(),
+      email: form.email.value.trim(),
+      message: form.message.value.trim()
     };
 
-    // ✅ 揀課程即時顯示費用
-    courseSelect.addEventListener("change", function () {
-      const selected = courseSelect.value;
-      if (courseFees[selected]) {
-        feeInfo.textContent = "💰 " + courseFees[selected];
-        feeInfo.style.display = "block";
-      } else {
-        feeInfo.style.display = "none";
-      }
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      status.textContent = "✅ 已收到報名，WhatsApp 已為你準備好";
+
+      // ✅ 自動彈 WhatsApp
+      const waMsg = "你好，我剛提交咗課程報名：\n" +
+        "課程：" + payload.courseName + "\n" +
+        "聯絡人：" + payload.contactPerson + "\n" +
+        "電話：" + payload.phone + "\n" +
+        "諮詢：" + payload.message;
+
+      window.open("https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(waMsg), "_blank");
+
+      // ✅ 浮動微信按鈕
+      showFloatingWeChatButton();
+
+      form.reset();
+      feeInfo.style.display = "none";
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    })
+    .catch(() => {
+      status.textContent = "❌ 送出失敗，請稍後再試。";
+    });
+  });
+
+  function showFloatingWeChatButton() {
+    if (document.getElementById("floatingWxBtn")) return;
+
+    const btn = document.createElement("div");
+    btn.id = "floatingWxBtn";
+    btn.innerHTML = "💬 微信";
+    btn.style.cssText = `
+      position: fixed;
+      right: 16px;
+      bottom: 90px;
+      background: #07c160;
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 12px 18px;
+      border-radius: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      cursor: pointer;
+      z-index: 9999;
+    `;
+
+    btn.addEventListener("click", () => {
+      navigator.clipboard.writeText(WECHAT_ID).then(() => {
+        btn.innerHTML = "✅ 已複製";
+        setTimeout(() => {
+          btn.innerHTML = "💬 微信";
+        }, 2000);
+      });
     });
 
-    // ✅ 送出表單
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbylhySw6oc5wkiZPoisLjabV2wKf2YbVNg5BC1wIH9N1dGIscVFgedWECR7jyTAk6Y_/exec";
+    document.body.appendChild(btn);
 
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      status.textContent = "送出中...";
-
-      const payload = {
-        courseName: form.courseName.value,
-        contactPerson: form.contactPerson.value.trim(),
-        phone: form.phone.value.trim(),
-        email: form.email.value.trim(),
-        message: form.message.value.trim()
-      };
-
-      fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      })
-        .then(() => {
-          status.textContent = "✅ 我哋已收到你嘅報名，稍後會 WhatsApp 聯絡你！";
-          form.reset();
-          feeInfo.style.display = "none";
-          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-        })
-        .catch(() => {
-          status.textContent = "❌ 送出失敗，請稍後再試。";
-        });
-    });
-  </script>
+    setTimeout(() => {
+      if (btn.parentNode) btn.parentNode.removeChild(btn);
+    }, 15000);
+  }
+</script>
 
 </body>
 </html>
