@@ -6,12 +6,11 @@
   <title>課程報名</title>
 
   <style>
-    /* ===== WhatsApp 背景 ===== */
     body {
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", sans-serif;
-      background: #e5ddd5; /* WhatsApp 經典淺灰綠 */
+      background: #e5ddd5; /* WhatsApp 背景色 */
     }
 
     .chat-container {
@@ -23,24 +22,23 @@
     }
 
     /* 系統提示 */
-    .system-msg {
+    .system-wrapper {
       text-align: center;
       margin: 12px 0;
-      font-size: 13px;
-      color: #555;
-      background: #e2f4cb;
+    }
+
+    .system-msg {
       display: inline-block;
+      background: #e2f4cb;
+      color: #555;
+      font-size: 13px;
       padding: 6px 12px;
       border-radius: 12px;
     }
 
-    .system-wrapper {
-      text-align: center;
-    }
-
-    /* ===== WhatsApp 氣泡（右側）===== */
+    /* WhatsApp 氣泡（右側） */
     .bubble {
-      background: #dcf8c6; /* WhatsApp 自己訊息綠 */
+      background: #dcf8c6;
       padding: 14px 16px;
       border-radius: 18px;
       margin-bottom: 12px;
@@ -50,7 +48,6 @@
       box-shadow: 0 1px 1px rgba(0,0,0,0.1);
     }
 
-    /* 氣泡小三角 */
     .bubble::after {
       content: "";
       position: absolute;
@@ -85,7 +82,19 @@
       min-height: 80px;
     }
 
-    /* ===== 底部送出欄 ===== */
+    /* 費用提示 */
+    #feeInfo {
+      display: none;
+      background: #fff3cd;
+      color: #856404;
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      white-space: pre-line;
+    }
+
+    /* 底部送出欄 */
     .bottom-bar {
       position: fixed;
       bottom: 0;
@@ -146,11 +155,14 @@
       <div class="bubble">
         <select id="companyName" name="companyName" required>
           <option value="" disabled selected>請選擇課程</option>
-          <option value="Summer Course">Summer Course</option>
-          <option value="Activities">Activities</option>
-          <option value="Others">Others</option>
+          <option value="Summer Course">暑期課程</option>
+          <option value="Activities">活動</option>
+          <option value="Others">其他</option>
         </select>
       </div>
+
+      <!-- 即時顯示費用 -->
+      <div id="feeInfo"></div>
 
       <!-- 聯絡人 -->
       <div class="system-wrapper">
@@ -195,8 +207,28 @@
   <script>
     const form = document.getElementById("contactForm");
     const status = document.getElementById("status");
+    const feeInfo = document.getElementById("feeInfo");
+    const courseSelect = document.getElementById("companyName");
 
-    // ? 換成你自己的 Web App URL
+    // ✅ 課程費用表（可隨時改）
+    const courseFees = {
+      "Summer Course": "暑期課程費用：MOP 2,800\n（共8堂，每堂1.5小時）\n🎉 早鳥優惠：6月30日前報名減MOP 200",
+      "Activities": "活動班費用：MOP 1,500（單次體驗）",
+      "Others": "請在諮詢內容欄注明想了解嘅課程，我哋會盡快回覆。"
+    };
+
+    // ✅ 揀課程即時顯示費用
+    courseSelect.addEventListener("change", function () {
+      const selected = courseSelect.value;
+      if (courseFees[selected]) {
+        feeInfo.textContent = "💰 " + courseFees[selected];
+        feeInfo.style.display = "block";
+      } else {
+        feeInfo.style.display = "none";
+      }
+    });
+
+    // ✅ 送出表單
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbylhySw6oc5wkiZPoisLjabV2wKf2YbVNg5BC1wIH9N1dGIscVFgedWECR7jyTAk6Y_/exec";
 
     form.addEventListener("submit", function (e) {
@@ -220,12 +252,13 @@
         body: JSON.stringify(payload)
       })
         .then(() => {
-          status.textContent = "? 訊息已送出，感謝您的報名！";
+          status.textContent = "✅ 我哋已收到你嘅報名，稍後會 WhatsApp 聯絡你！";
           form.reset();
+          feeInfo.style.display = "none";
           window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
         })
         .catch(() => {
-          status.textContent = "? 送出失敗，請稍後再試。";
+          status.textContent = "❌ 送出失敗，請稍後再試。";
         });
     });
   </script>
