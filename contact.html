@@ -1,321 +1,189 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>課程報名</title>
+const SHEET_NAME = "Submissions";
+const NOTIFY_EMAIL = "jenzen.2025ai@gmail.com"; // 多人收用逗號分隔
 
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", sans-serif;
-      background: #e5ddd5;
-    }
+// ==========================================
+//  🌐 Web App 入口
+// ==========================================
 
-    .chat-container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 16px;
-      padding-bottom: 130px;
-    }
+function doGet() {
+  return ContentService.createTextOutput("Web app is active");
+}
 
-    .system-wrapper {
-      text-align: center;
-      margin: 12px 0;
-    }
+function doPost(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (!sheet) throw new Error("Submissions sheet not found");
 
-    .system-msg {
-      display: inline-block;
-      background: #e2f4cb;
-      color: #555;
-      font-size: 13px;
-      padding: 6px 12px;
-      border-radius: 12px;
-    }
+    const data = e.postData ? JSON.parse(e.postData.contents) : e.parameter;
 
-    .bubble {
-      background: #dcf8c6;
-      padding: 14px 16px;
-      border-radius: 18px;
-      margin-bottom: 12px;
-      max-width: 85%;
-      margin-left: auto;
-      position: relative;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-    }
+    sheet.appendRow([
+      new Date(),
+      data.courseName || "",
+      data.contactPerson || "",
+      data.phone || "",
+      data.email || "",
+      data.message || ""
+    ]);
 
-    .bubble::after {
-      content: "";
-      position: absolute;
-      right: -6px;
-      top: 14px;
-      width: 0;
-      height: 0;
-      border-top: 6px solid transparent;
-      border-bottom: 6px solid transparent;
-      border-left: 8px solid #dcf8c6;
-    }
+    Logger.log("✅ doPost executed, courseName = " + data.courseName);
+    sendNotification(data);
 
-    label {
-      display: block;
-      font-size: 13px;
-      color: #555;
-      margin-bottom: 6px;
-    }
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: "success", message: "提交成功" })
+    ).setMimeType(ContentService.MimeType.JSON);
 
-    input, select, textarea {
-      width: 100%;
-      border: none;
-      font-size: 16px;
-      background: transparent;
-      outline: none;
-      resize: vertical;
-    }
-
-    textarea {
-      min-height: 80px;
-    }
-
-    #feeInfo {
-      display: none;
-      background: #fff3cd;
-      color: #856404;
-      padding: 10px 14px;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      font-size: 14px;
-      white-space: pre-line;
-    }
-
-    .bottom-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #f0f0f0;
-      padding: 12px 16px;
-      box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
-    }
-
-    .send-btn {
-      width: 100%;
-      max-width: 480px;
-      margin: 0 auto;
-      display: block;
-      background: #25d366;
-      color: #fff;
-      font-size: 18px;
-      font-weight: bold;
-      padding: 16px;
-      border: none;
-      border-radius: 30px;
-      cursor: pointer;
-    }
-
-    #status {
-      text-align: center;
-      font-size: 14px;
-      color: #333;
-      margin-top: 10px;
-    }
-
-    /* ✅ WhatsApp 綠色大掣 */
-    .wa-button {
-      display: block;
-      width: 90%;
-      max-width: 320px;
-      margin: 14px auto 0;
-      background: #25d366;
-      color: #fff;
-      font-size: 17px;
-      font-weight: bold;
-      text-align: center;
-      padding: 16px 20px;
-      border-radius: 30px;
-      text-decoration: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    }
-
-    .wa-button:hover {
-      background: #1ebe5d;
-    }
-  </style>
-</head>
-
-<body>
-
-<div class="chat-container">
-  <div class="system-wrapper">
-    <div class="system-msg">課程報名表單</div>
-  </div>
-
-  <form id="contactForm">
-    <div class="system-wrapper">
-      <div class="system-msg">請選擇課程</div>
-    </div>
-    <div class="bubble">
-      <select id="courseName" name="courseName" required>
-        <option value="" disabled selected>請選擇課程</option>
-        <option value="暑期課程">暑期課程</option>
-        <option value="活動">活動</option>
-        <option value="其他">其他</option>
-      </select>
-    </div>
-
-    <div id="feeInfo"></div>
-
-    <div class="system-wrapper">
-      <div class="system-msg">請輸入聯絡人姓名</div>
-    </div>
-    <div class="bubble">
-      <input id="contactPerson" name="contactPerson" type="text" required placeholder="例如：陳大文" />
-    </div>
-
-    <div class="system-wrapper">
-      <div class="system-msg">請輸入聯絡電話</div>
-    </div>
-    <div class="bubble">
-      <input id="phone" name="phone" type="tel" placeholder="例如：6xxxxxxx" />
-    </div>
-
-    <div class="system-wrapper">
-      <div class="system-msg">聯絡電郵（選填）</div>
-    </div>
-    <div class="bubble">
-      <input id="email" name="email" type="email" placeholder="example@email.com" />
-    </div>
-
-    <div class="system-wrapper">
-      <div class="system-msg">請輸入諮詢內容</div>
-    </div>
-    <div class="bubble">
-      <textarea id="message" name="message" required placeholder="想了解課程內容、費用、時間等"></textarea>
-    </div>
-  </form>
-</div>
-
-<div class="bottom-bar">
-  <button type="submit" form="contactForm" class="send-btn">送出</button>
-  <div id="status"></div>
-</div>
-
-<script>
-  const form = document.getElementById("contactForm");
-  const status = document.getElementById("status");
-  const feeInfo = document.getElementById("feeInfo");
-  const courseSelect = document.getElementById("courseName");
-
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbylhySw6oc5wkiZPoisLjabV2wKf2YbVNg5BC1wIH9N1dGIscVFgedWECR7jyTAk6Y_/exec";
-
-  const WA_NUMBER = "85363562095";
-  const WECHAT_ID = "kaman9394";
-
-  const courseFees = {
-    "暑期課程": "暑期課程費用：MOP 2,800\n（共8堂，每堂1.5小時）\n🎉 早鳥優惠：6月30日前報名減MOP 200",
-    "活動": "活動班費用：MOP 1,500（單次體驗）",
-    "其他": "請在諮詢內容欄注明想了解嘅課程，我哋會盡快回覆。"
-  };
-
-  courseSelect.addEventListener("change", () => {
-    const selected = courseSelect.value;
-    if (courseFees[selected]) {
-      feeInfo.textContent = "💰 " + courseFees[selected];
-      feeInfo.style.display = "block";
-    } else {
-      feeInfo.style.display = "none";
-    }
-  });
-
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-    status.textContent = "送出中...";
-
-    const payload = {
-      courseName: form.courseName.value,
-      contactPerson: form.contactPerson.value.trim(),
-      phone: form.phone.value.trim(),
-      email: form.email.value.trim(),
-      message: form.message.value.trim()
-    };
-
-    fetch(WEB_APP_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    })
-    .then(() => {
-      // ✅ 1. 成功提示
-      status.innerHTML = "✅ 已收到報名<br>如需即時溝通，請按下方按鈕打開 WhatsApp：";
-
-      // ✅ 2. 組 WhatsApp 訊息
-      const waMsg = "你好，我剛提交咗課程報名：\n" +
-        "課程：" + payload.courseName + "\n" +
-        "聯絡人：" + payload.contactPerson + "\n" +
-        "電話：" + payload.phone + "\n" +
-        "諮詢：" + payload.message;
-
-      const waUrl = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(waMsg);
-
-      // ✅ 3. 顯示「打開 WhatsApp」綠色大掣（真人撳，iOS 最穩）
-      const waBtn = document.createElement("a");
-      waBtn.href = waUrl;
-      waBtn.target = "_blank";
-      waBtn.innerHTML = "💬 打開 WhatsApp 同我傾";
-      waBtn.className = "wa-button";
-      status.after(waBtn);
-
-      // ✅ 4. 顯示浮動微信按鈕
-      showFloatingWeChatButton();
-
-      // ✅ 5. 重設表單
-      form.reset();
-      feeInfo.style.display = "none";
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-    })
-    .catch(() => {
-      status.textContent = "❌ 送出失敗，請稍後再試。";
-    });
-  });
-
-  function showFloatingWeChatButton() {
-    if (document.getElementById("floatingWxBtn")) return;
-
-    const btn = document.createElement("div");
-    btn.id = "floatingWxBtn";
-    btn.innerHTML = "💬 微信";
-    btn.style.cssText = `
-      position: fixed;
-      right: 16px;
-      bottom: 90px;
-      background: #07c160;
-      color: #fff;
-      font-size: 14px;
-      font-weight: bold;
-      padding: 12px 18px;
-      border-radius: 30px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-      cursor: pointer;
-      z-index: 9999;
-    `;
-
-    btn.addEventListener("click", () => {
-      navigator.clipboard.writeText(WECHAT_ID).then(() => {
-        btn.innerHTML = "✅ 已複製";
-        setTimeout(() => {
-          btn.innerHTML = "💬 微信";
-        }, 2000);
-      });
-    });
-
-    document.body.appendChild(btn);
-
-    setTimeout(() => {
-      if (btn.parentNode) btn.parentNode.removeChild(btn);
-    }, 15000);
+  } catch (error) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: "error", message: error.message })
+    ).setMimeType(ContentService.MimeType.JSON);
   }
-</script>
+}
 
-</body>
-</html>
+// ==========================================
+//  📧 即時通知（表單送出時）
+// ==========================================
+
+function sendNotification(data) {
+  const subject = "【新課程報名】" + (data.courseName || "未選課程");
+  const body = ""
+    + "你收到一個新報名：\n\n"
+    + "課程：" + (data.courseName || "—") + "\n"
+    + "聯絡人：" + (data.contactPerson || "—") + "\n"
+    + "電話：" + (data.phone || "—") + "\n"
+    + "Email：" + (data.email || "—") + "\n"
+    + "諮詢內容：" + (data.message || "—") + "\n\n"
+    + "請儘快 WhatsApp 聯絡對方。";
+
+  MailApp.sendEmail(NOTIFY_EMAIL, subject, body);
+}
+
+function testSendMail() {
+  sendNotification({
+    courseName: "Summer Course",
+    contactPerson: "測試人",
+    phone: "12345678",
+    email: "test@example.com",
+    message: "呢封係手動測試信"
+  });
+  Logger.log("testSendMail done");
+}
+
+// ==========================================
+//  📅 定時任務
+// ==========================================
+
+function sendDailySummary() {
+  const rows = getRowsByDateRange(-1, -1);
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yKey = Utilities.formatDate(yesterday, Session.getScriptTimeZone(), "yyyy-MM-dd");
+
+  const subject = "📋 昨日課程報名摘要 (" + yKey + ")";
+  const html = buildHtmlEmail(yKey, rows);
+
+  MailApp.sendEmail({ to: NOTIFY_EMAIL, subject: subject, htmlBody: html });
+  Logger.log("✅ Daily summary sent: " + rows.length + " rows");
+}
+
+function sendWeeklySummary() {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const lastMondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek - 7;
+  const lastSundayOffset = lastMondayOffset + 6;
+
+  const rows = getRowsByDateRange(lastMondayOffset, lastSundayOffset);
+
+  const start = new Date(today);
+  start.setDate(today.getDate() + lastMondayOffset);
+  const end = new Date(today);
+  end.setDate(today.getDate() + lastSundayOffset);
+
+  const rangeStr =
+    Utilities.formatDate(start, Session.getScriptTimeZone(), "yyyy-MM-dd") +
+    " ~ " +
+    Utilities.formatDate(end, Session.getScriptTimeZone(), "yyyy-MM-dd");
+
+  const subject = "📊 上週課程報名彙總 (" + rangeStr + ")";
+  const html = buildHtmlEmail(rangeStr, rows);
+
+  MailApp.sendEmail({ to: NOTIFY_EMAIL, subject: subject, htmlBody: html });
+  Logger.log("✅ Weekly summary sent: " + rows.length + " rows");
+}
+
+// ==========================================
+//  🔧 共用工具
+// ==========================================
+
+function getRowsByDateRange(startOffset, endOffset) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return [];
+
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+
+  const headers = data[0];
+  const dateCol = headers.findIndex(h => h.toString().toLowerCase().includes("date"));
+  if (dateCol === -1) return [];
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const start = new Date(today);
+  start.setDate(today.getDate() + startOffset);
+
+  const end = new Date(today);
+  end.setDate(today.getDate() + endOffset);
+  end.setHours(23, 59, 59, 999);
+
+  const result = [];
+  for (let i = 1; i < data.length; i++) {
+    const d = new Date(data[i][dateCol]);
+    if (isNaN(d)) continue;
+    if (d >= start && d <= end) result.push(data[i]);
+  }
+  return result;
+}
+
+function buildHtmlEmail(dateLabel, rows) {
+  const css = `
+    <style>
+      body { font-family: -apple-system, "Microsoft JhengHei", sans-serif; color: #333; }
+      h2 { color: #25d366; }
+      table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+      th { background: #25d366; color: #fff; padding: 10px; text-align: left; font-size: 13px; }
+      td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+      tr:nth-child(even) { background: #f9f9f9; }
+      .count { background: #fff3cd; padding: 8px 14px; border-radius: 8px; display: inline-block; margin-top: 10px; }
+    </style>
+  `;
+
+  let body = css + "<h2>📋 課程報名摘要</h2>";
+  body += "<p>以下係 <b>" + dateLabel + "</b> 嘅報名資料：</p>";
+
+  if (rows.length === 0) {
+    body += "<p style='color:#999'>（呢個時段冇新報名）</p>";
+  } else {
+    body += "<div class='count'>共 <b>" + rows.length + "</b> 筆報名</div>";
+    body += "<table><tr><th>#</th><th>日期</th><th>課程</th><th>聯絡人</th><th>電話</th><th>Email</th><th>諮詢內容</th></tr>";
+
+    rows.forEach((r, idx) => {
+      const dStr = r[0] instanceof Date
+        ? Utilities.formatDate(r[0], Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm")
+        : r[0];
+      body += "<tr>"
+        + "<td>" + (idx + 1) + "</td>"
+        + "<td>" + dStr + "</td>"
+        + "<td>" + (r[1] || "—") + "</td>"
+        + "<td>" + (r[2] || "—") + "</td>"
+        + "<td>" + (r[3] || "—") + "</td>"
+        + "<td>" + (r[4] || "—") + "</td>"
+        + "<td>" + (r[5] || "—") + "</td>"
+        + "</tr>";
+    });
+
+    body += "</table>";
+  }
+
+  body += "<p style='margin-top:18px;color:#999;font-size:12px'>— 此郵件由 Google Apps Script 自動發送 —</p>";
+  return body;
+}
