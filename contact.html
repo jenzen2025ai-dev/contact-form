@@ -119,6 +119,27 @@
       color: #333;
       margin-top: 10px;
     }
+
+    /* ✅ WhatsApp 綠色大掣 */
+    .wa-button {
+      display: block;
+      width: 90%;
+      max-width: 320px;
+      margin: 14px auto 0;
+      background: #25d366;
+      color: #fff;
+      font-size: 17px;
+      font-weight: bold;
+      text-align: center;
+      padding: 16px 20px;
+      border-radius: 30px;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .wa-button:hover {
+      background: #1ebe5d;
+    }
   </style>
 </head>
 
@@ -225,20 +246,30 @@
       body: JSON.stringify(payload)
     })
     .then(() => {
-      status.textContent = "✅ 已收到報名，WhatsApp 已為你準備好";
+      // ✅ 1. 成功提示
+      status.innerHTML = "✅ 已收到報名<br>如需即時溝通，請按下方按鈕打開 WhatsApp：";
 
-      // ✅ 自動彈 WhatsApp
+      // ✅ 2. 組 WhatsApp 訊息
       const waMsg = "你好，我剛提交咗課程報名：\n" +
         "課程：" + payload.courseName + "\n" +
         "聯絡人：" + payload.contactPerson + "\n" +
         "電話：" + payload.phone + "\n" +
         "諮詢：" + payload.message;
 
-      window.open("https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(waMsg), "_blank");
+      const waUrl = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(waMsg);
 
-      // ✅ 浮動微信按鈕
+      // ✅ 3. 顯示「打開 WhatsApp」綠色大掣（真人撳，iOS 最穩）
+      const waBtn = document.createElement("a");
+      waBtn.href = waUrl;
+      waBtn.target = "_blank";
+      waBtn.innerHTML = "💬 打開 WhatsApp 同我傾";
+      waBtn.className = "wa-button";
+      status.after(waBtn);
+
+      // ✅ 4. 顯示浮動微信按鈕
       showFloatingWeChatButton();
 
+      // ✅ 5. 重設表單
       form.reset();
       feeInfo.style.display = "none";
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
