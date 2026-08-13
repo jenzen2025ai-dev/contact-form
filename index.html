@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Daily Submissions</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>body{font-family:sans-serif;margin:2rem}#c{max-width:1000px}</style>
+</head>
+<body>
+  <h2>Daily GitHub Contributions</h2>
+  <canvas id="c"></canvas>
+
+  <script>
+    const USER = "octocat"; // change this
+    const API = "https://api.github.com/graphql";
+
+    const query = `
+      query {
+        user(login: "${USER}") {
+          contributionsCollection {
+            contributionCalendar {
+              weeks { contributionDays { date contributionCount } }
+            }
+          }
+        }
+      }`;
+
+    fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
+    })
+      .then(r => r.json())
+      .then(j => {
+        const weeks = j.data.user.contributionsCollection.contributionCalendar.weeks;
+        const days = weeks.flatMap(w => w.contributionDays);
+        const labels = days.map(d => d.date);
+        const counts = days.map(d => d.contributionCount);
+
+        new Chart(document.getElementById("c"), {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [{
+              label: "Submissions per day",
+              data: counts,
+              backgroundColor: "rgba(76,175,80,.6)"
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: { x: { ticks: { maxTicksLimit: 12 } } }
+          }
+        });
+      })
+      .catch(err => alert("API error (rate limit?): " + err));
+  </script>
+</body>
+</html>
