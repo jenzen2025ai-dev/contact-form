@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mummy求職報名</title>
+  <title>Mummy Pancake 求職報名</title>
 
   <style>
     body {
@@ -140,19 +140,18 @@
 
 <div class="chat-container">
   <div class="system-wrapper">
-    <div class="system-msg">課程報名表單</div>
+    <div class="system-msg">求職報名表單</div>
   </div>
 
   <form id="contactForm">
     <div class="system-wrapper">
-      <div class="system-msg">請選擇課程</div>
+      <div class="system-msg">請選擇求職類型</div>
     </div>
     <div class="bubble">
-      <select id="courseName" name="courseName" required>
-        <option value="" disabled selected>請選擇課程</option>
-        <option value="暑期課程">暑期課程</option>
-        <option value="活動">活動</option>
-        <option value="其他">其他</option>
+      <select id="ApplyType" name="ApplyType" required>
+        <option value="" disabled selected>請選擇求職類</option>
+        <option value="Full Time - 全職">Full Time - 全職</option>
+        <option value="Part Time - 兼職">Part Time - 兼職</option>
       </select>
     </div>
 
@@ -183,7 +182,7 @@
       <div class="system-msg">請輸入諮詢內容</div>
     </div>
     <div class="bubble">
-      <textarea id="message" name="message" required placeholder="想了解課程內容、費用、時間等"></textarea>
+      <textarea id="message" name="message" required placeholder="想了解求職內容、地點、時間、薪資等"></textarea>
     </div>
   </form>
 </div>
@@ -197,23 +196,22 @@
   const form = document.getElementById("contactForm");
   const status = document.getElementById("status");
   const feeInfo = document.getElementById("feeInfo");
-  const courseSelect = document.getElementById("courseName");
+  const ApplySelect = document.getElementById("Apply");
 
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRBzn831Z-v2sgGnVrkrt8EW8Ix8HbCIvCQ01AxeRxpKJsAEgKjInKwEgB-NcP_ebZ/exec";
 
   const WA_NUMBER = "85311111111";
   const WECHAT_ID = "11111111";
 
-  const courseFees = {
-    "暑期課程": "暑期課程費用：MOP 2,800\n（共8堂，每堂1.5小時）\n🎉 早鳥優惠：6月30日前報名減MOP 200",
-    "活動": "活動班費用：MOP 1,500（單次體驗）",
-    "其他": "請在諮詢內容欄注明想了解嘅課程，我哋會盡快回覆。"
+  const TypeDesc = {
+    "Full Time - 全職": "Monday - Sunday; shift A 10:00am - 7:00pm / shift B 12:30pm - 9:30 pm 🎉 1 hr lunch break",
+    "Part Time - 兼職": "EveryNight 7:30 pm - 9:30pm",
   };
 
-  courseSelect.addEventListener("change", () => {
-    const selected = courseSelect.value;
-    if (courseFees[selected]) {
-      feeInfo.textContent = "💰 " + courseFees[selected];
+  ApplySelect.addEventListener("change", () => {
+    const selected = ApplySelect.value;
+    if (TypeDesc[selected]) {
+      feeInfo.textContent = "💰 " + TypeDesc[selected];
       feeInfo.style.display = "block";
     } else {
       feeInfo.style.display = "none";
@@ -225,7 +223,7 @@
     status.textContent = "送出中...";
 
     const payload = {
-      courseName: form.courseName.value,
+      ApplyType: form.ApplyType.value,
       contactPerson: form.contactPerson.value.trim(),
       phone: form.phone.value.trim(),
       email: form.email.value.trim(),
@@ -244,7 +242,7 @@
 
       // ✅ 2. 組 WhatsApp 訊息
       const waMsg = "你好，我剛提交咗課程報名：\n" +
-        "課程：" + payload.courseName + "\n" +
+        "課程：" + payload.ApplyType + "\n" +
         "聯絡人：" + payload.contactPerson + "\n" +
         "電話：" + payload.phone + "\n" +
         "諮詢：" + payload.message;
